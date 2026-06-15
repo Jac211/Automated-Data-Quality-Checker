@@ -1,0 +1,16 @@
+id,name,email,age,salary,join_date,department,phone,status
+1,Alice Smith,alice@example.com,30,75000,2023-01-15,Engineering,555-1234,active
+2,Bob Jones,bob@example.com,28,68000,01/20/2023,Marketing,555-2345,Active
+3,Charlie Brown,charlie@example.com,,72000,2023-02-01,Engineering,555-3456,ACTIVE
+4,Diana Prince,diana.invalid,35,71000,2023-02-10,HR,555-4567,active
+5,Eve White,eve@example.com,29,75500,2023-03-05,Marketing,5554567,inactive
+6,Frank Miller,frank@example.com,200,69000,2023-03-12,Engineering,555-6789,Inactive
+7,Grace Lee,grace@example.com,31,999999,2023-04-01,HR,555-7890,active
+8,Henry Ford,henry@example.com,27,73000,2023-04-15,Marketing,555-8901,active
+9,Iris Black,,26,71500,2023-05-01,Engineering,,active
+10,Jack White,jack@example.com,33,68500,May 01 2023,HR,555-0123,active
+1,Alice Smith,alice@example.com,30,75000,2023-01-15,Engineering,555-1234,active
+12,Karen Green,karen@example.com,31,70000,2023-06-01,Marketing,555-1234,Active
+13,Leo Brown, leo@example.com,29,N/A,2023-06-15,HR,555-2345,active
+14,Mia Davis,mia@example.com,28,72000,2023-07-01,engineering,,active
+15,Nathan Evans,nathanexample.com,32,69500,2023-07-15,Engineering,555-4321,active
