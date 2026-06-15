@@ -167,8 +167,8 @@ class TestOutliers:
         checker = DataQualityChecker(str(SAMPLE_CSV))
         checker.run_all_checks()
         outlier_cols = [i["column"] for i in checker.issues["outliers"]]
-        # age=200 and salary=999999 are extreme
-        assert "age" in outlier_cols or "salary" in outlier_cols
+        # age=200 and salary=999999 are both extreme — require both
+        assert "age" in outlier_cols and "salary" in outlier_cols
 
 
 # ---------------------------------------------------------------------------
@@ -231,13 +231,12 @@ class TestFormatting:
     def test_sample_csv_formatting_issues(self):
         checker = DataQualityChecker(str(SAMPLE_CSV))
         checker.run_all_checks()
-        all_types = [i["type"] for i in checker.issues["formatting"]]
-        # Expect at least case and email/date issues in the sample data
-        assert len(checker.issues["formatting"]) >= 2
-        assert any(t in all_types for t in (
-            "case_inconsistency", "mixed_date_formats", "invalid_email_format",
-            "leading_trailing_whitespace",
-        ))
+        fmt_types = {i["type"] for i in checker.issues["formatting"]}
+        assert len(checker.issues["formatting"]) >= 4
+        assert "case_inconsistency" in fmt_types
+        assert "mixed_date_formats" in fmt_types
+        assert "invalid_email_format" in fmt_types
+        assert "leading_trailing_whitespace" in fmt_types
 
 
 # ---------------------------------------------------------------------------

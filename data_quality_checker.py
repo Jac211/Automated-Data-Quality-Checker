@@ -28,6 +28,9 @@ DATE_FORMATS = [
 
 EMAIL_PATTERN = re.compile(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$')
 
+_PREVIEW_ROWS = 10   # max row numbers shown in text report per issue
+_PREVIEW_VALS = 5    # max values/examples shown in text report per issue
+
 
 def _try_parse_date(value: str) -> Optional[str]:
     """Return matched format string if value parses as a date, else None."""
@@ -275,7 +278,7 @@ class DataQualityChecker:
             return []
 
         with_commas = int(str_series.str.match(r'^\$?[\d]{1,3}(,\d{3})+(\.\d+)?$').sum())
-        without_commas = int(str_series.str.match(r'^\d{4,}$').sum())
+        without_commas = int(str_series.str.match(r'^\d+$').sum())
         if with_commas > 0 and without_commas > 0:
             return [{
                 "column": col,
@@ -343,8 +346,8 @@ class DataQualityChecker:
         lines += [thin, f"[1] MISSING VALUES — {len(mv)} column(s) affected", thin]
         if mv:
             for item in mv:
-                rows_preview = item["rows"][:10]
-                suffix = f" … +{len(item['rows']) - 10} more" if len(item["rows"]) > 10 else ""
+                rows_preview = item["rows"][:_PREVIEW_ROWS]
+                suffix = f" … +{len(item['rows']) - _PREVIEW_ROWS} more" if len(item["rows"]) > _PREVIEW_ROWS else ""
                 lines += [
                     f"  Column : {item['column']}",
                     f"    Missing : {item['missing_count']} ({item['missing_pct']}%)",
@@ -374,9 +377,9 @@ class DataQualityChecker:
         if outs:
             for item in outs:
                 s = item["stats"]
-                rows_preview = item["rows"][:5]
-                vals_preview = [round(v, 2) for v in item["values"][:5]]
-                suffix = f" … +{len(item['rows']) - 5} more" if len(item["rows"]) > 5 else ""
+                rows_preview = item["rows"][:_PREVIEW_VALS]
+                vals_preview = [round(v, 2) for v in item["values"][:_PREVIEW_VALS]]
+                suffix = f" … +{len(item['rows']) - _PREVIEW_VALS} more" if len(item["rows"]) > _PREVIEW_VALS else ""
                 lines += [
                     f"  Column : {item['column']}",
                     f"    Outliers : {item['outlier_count']}",
@@ -401,11 +404,11 @@ class DataQualityChecker:
                 if "affected_count" in item:
                     lines.append(f"    Affected : {item['affected_count']} value(s)")
                 if "rows" in item:
-                    rows_preview = item["rows"][:5]
-                    suffix = f" … +{len(item['rows']) - 5} more" if len(item["rows"]) > 5 else ""
+                    rows_preview = item["rows"][:_PREVIEW_VALS]
+                    suffix = f" … +{len(item['rows']) - _PREVIEW_VALS} more" if len(item["rows"]) > _PREVIEW_VALS else ""
                     lines.append(f"    Rows     : {rows_preview}{suffix}")
                 if "examples" in item:
-                    lines.append(f"    Examples : {item['examples'][:5]}")
+                    lines.append(f"    Examples : {item['examples'][:_PREVIEW_VALS]}")
         else:
             lines.append("  No formatting inconsistencies detected.")
         lines.append("")
@@ -429,6 +432,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="data_quality_checker",
         description="Automated Data Quality Checker — flags missing values, duplicates, "
                     "outliers, and formatting inconsistencies in CSV/Excel files.",
+        epilog="Exit codes: 0 = no issues found  |  1 = issues found  |  2 = file / IO error",
     )
     parser.add_argument("file", help="Path to the CSV or Excel file to check")
     parser.add_argument("--sheet", default=None, help="Sheet name (Excel only)")
@@ -462,8 +466,12 @@ def main(argv=None) -> int:
     report = checker.generate_report(output_format=args.output_format)
 
     if args.output:
-        Path(args.output).write_text(report, encoding="utf-8")
-        print(f"Report written to {args.output}")
+        try:
+            Path(args.output).write_text(report, encoding="utf-8")
+            print(f"Report written to {args.output}")
+        except OSError as exc:
+            print(f"Error writing output file: {exc}", file=sys.stderr)
+            return 2
     else:
         print(report)
 
